@@ -4,12 +4,15 @@ import read
 import show
 import dijkstra
 
+TUI_FLAGS = ("--tui", "-i", "--interactive", "--menu")
+
+
 def validations():
     # Validar versión de Python
     if sys.version_info[0] != 3: print("\n\t> No estás utilizando Python 3\n"); sys.exit(1)
 
     # Validar argumentos
-    if len(sys.argv) < 2: print("\n\t> Use: python LinkState.py <param1>\n"); sys.exit(1)
+    if len(sys.argv) < 2: print("\n\t> Use: python LinkState.py <param1>\n\t>      python LinkState.py --tui\n"); sys.exit(1)
 
     # Validar existencia del archivo
     global file_path 
@@ -19,6 +22,14 @@ def validations():
 
 # Inicio de Programa 
 if __name__ == "__main__":
+    # Modo TUI: selector interactivo, no altera el modo clásico.
+    # Uso: python LinkState.py --tui [test/topoX.txt]
+    if len(sys.argv) >= 2 and sys.argv[1] in TUI_FLAGS:
+        import tui
+        start = sys.argv[2] if len(sys.argv) > 2 else None
+        tui.run(start)
+        sys.exit(0)
+
     validations()
 
     # Lectura de Archivo TXT

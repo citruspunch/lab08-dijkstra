@@ -37,7 +37,13 @@ def p(v):
 Función donde Inicia la Ejecución del Algoritmo de Dijkstra
 Retorna una Estructura
 '''
-def init(initNode, routeDict):
+def compute(initNode, routeDict):
+    """Versión rica: retorna (D, p, stepsCalcs, orden_N_prima, nodes).
+
+    D/p son dicts finales, stepsCalcs el historial compatible con
+    show.stepsCalculatingRoute, orden_N_prima el orden en que los
+    nodos entraron a N'.
+    """
     global _routeDict, _D, _p
     _routeDict = routeDict
     INF = float('inf')
@@ -45,8 +51,6 @@ def init(initNode, routeDict):
     nodes = sorted(routeDict.keys())
 
     # Inicialización: N' = {u}
-    # Si v es vecino de u: D(v) = c(u,v), p(v) = u
-    # si no: D(v) = infinito, p(v) = u
     _D = {}
     _p = {}
     for v in nodes:
@@ -70,28 +74,17 @@ def init(initNode, routeDict):
             d = _D[v]
             d_str = "∞" if d == INF else str(d)
             row.append(f"{d_str}, {_p[v]}")
-        # Columna N': último nodo agregado a N'
         row.append(N_prime[-1])
         return tuple(row)
 
-    # Estado inicial
     stepsCalcs.append(snapshot(0))
 
     paso = 0
-    # Repetir hasta N' = N
     while len(N_prime) < len(nodes):
-        # Encontrar w que no esté en N' tal que D(w) es mínimo.
-        # Empate: orden alfabético (min por (D, nombre)).
         candidates = [v for v in nodes if v not in N_prime]
         w = min(candidates, key=lambda v: (_D[v], v))
-
-        # Añadir w a N'
         N_prime.append(w)
         paso += 1
-
-        # Actualizar D(v) para cada vecino v de w no esté en N':
-        # D(v) = min(D(v), D(w) + c(w,v))
-        # Empate (costos iguales): se elige el nuevo nodo w (<=).
         if _D[w] != INF:
             for v in routeDict.get(w, {}):
                 if v in N_prime:
@@ -102,9 +95,13 @@ def init(initNode, routeDict):
                 if alt <= _D[v]:
                     _D[v] = alt
                     _p[v] = w
-
         stepsCalcs.append(snapshot(paso))
 
+    return dict(_D), dict(_p), stepsCalcs, list(N_prime), list(nodes)
+
+
+def init(initNode, routeDict):
+    _, _, stepsCalcs, _, _ = compute(initNode, routeDict)
     return stepsCalcs
 
 
